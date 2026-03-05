@@ -1,0 +1,24 @@
+{
+  "total_rows": 3761,
+  "missing_masks_single": 1,
+  "missing_masks_seq": 0,
+  "split_counts": {
+    "test": 2313,
+    "train": 1306,
+    "val": 142
+  },
+  "test_group_counts": {
+    "data2": 88,
+    "data3": 1793,
+    "data4": 432
+  },
+  "centre_counts": {
+    "C1": 256,
+    "C2": 301,
+    "C3": 456,
+    "C4": 227,
+    "C5": 208,
+    "C6": 520,
+    "CUNK": 1793
+  }
+}
