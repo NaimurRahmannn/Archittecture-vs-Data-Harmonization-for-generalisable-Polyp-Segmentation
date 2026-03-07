@@ -212,12 +212,47 @@ class UNet(nn.Module):
         return self.out_conv(d1)
 
 
+def build_model_from_config(cfg):
+    model_name = str(cfg.get("model_name", "m0_unet")).lower()
+    if model_name in {"m0_unet", "unet"}:
+        return UNet(in_channels=3, out_channels=1, base_ch=cfg.get("base_ch", 32))
+    if model_name in {"m1_convnext_unet", "m1_convnext_base"}:
+        from src.models.m1_convnext_unet import M1ConvNeXtUNet
+
+        return M1ConvNeXtUNet(
+            encoder_name=cfg.get("encoder_name", "convnext_tiny"),
+            pretrained=cfg.get("pretrained", True),
+        )
+    if model_name in {"m2_convnext_xattn_unet", "m2_convnext_xattn"}:
+        from src.models.m2_convnext_xattn_unet import M2ConvNeXtXAttnUNet
+
+        return M2ConvNeXtXAttnUNet(
+            encoder_name=cfg.get("encoder_name", "convnext_tiny"),
+            pretrained=cfg.get("pretrained", True),
+            attn_dim=cfg.get("attn_dim", 64),
+            max_tokens=cfg.get("max_tokens", 1024),
+        )
+    if model_name in {"m2b_convnext_xattn_unet", "m2b_convnext_xattn"}:
+        from src.models.m2b_convnext_xattn_unet import M2bConvNeXtXAttnUNet
+
+        return M2bConvNeXtXAttnUNet(
+            encoder_name=cfg.get("encoder_name", "convnext_tiny"),
+            pretrained=cfg.get("pretrained", True),
+            attn_dim=cfg.get("attn_dim", 64),
+            max_tokens=cfg.get("max_tokens", 1024),
+        )
+    raise ValueError(f"Unsupported model_name: {cfg.get('model_name')}")
+
+
 @torch.no_grad()
 def evaluate_model(model, loader, device):
     model.eval()
     tp = 0.0
     fp = 0.0
     fn = 0.0
+    pred_area_sum = 0.0
+    gt_area_sum = 0.0
+    num_images = 0
     for images, masks in loader:
         images = images.to(device)
         masks = masks.to(device)
@@ -228,8 +263,24 @@ def evaluate_model(model, loader, device):
         tp += (preds * masks).sum().item()
         fp += (preds * (1.0 - masks)).sum().item()
         fn += ((1.0 - preds) * masks).sum().item()
+        pred_area_sum += preds.mean(dim=(1, 2, 3)).sum().item()
+        gt_area_sum += masks.mean(dim=(1, 2, 3)).sum().item()
+        num_images += preds.size(0)
 
-    return compute_metrics(tp, fp, fn)
+    metrics = compute_metrics(tp, fp, fn)
+    mean_pred_area = pred_area_sum / max(1, num_images)
+    mean_gt_area = gt_area_sum / max(1, num_images)
+    metrics.update(
+        {
+            "mean_pred_area": float(mean_pred_area),
+            "mean_gt_area": float(mean_gt_area),
+            "area_ratio": float(mean_pred_area / (mean_gt_area + 1e-8)),
+            "area_diff": float(mean_pred_area - mean_gt_area),
+            "mean_pred_area_per_image": float(mean_pred_area),
+            "mean_gt_area_per_image": float(mean_gt_area),
+        }
+    )
+    return metrics
 
 
 def save_json(path, payload):

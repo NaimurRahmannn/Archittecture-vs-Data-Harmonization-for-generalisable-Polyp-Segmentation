@@ -1,0 +1,24 @@
+model_name: m2_convnext_xattn
+encoder_name: convnext_tiny
+pretrained: true
+attn_dim: 64
+max_tokens: 1024
+
+data_root: E:/Thesis_Dataset/PolypGen2021_MultiCenterData_v3/PolypGen2021_MultiCenterData_v3
+manifest_csv: E:/Thesis_Code/splits/manifest.csv
+run_dir: E:/Thesis_Code/runs/m2_convnext_xattn
+
+image_size: 256
+batch_size: 8
+num_workers: 0
+
+epochs: 50
+lr: 0.0001
+weight_decay: 0.0001
+seed: 0
+
+augment: true
+rotate_limit: 20.0
+brightness_range: 0.2
+contrast_range: 0.2
+gamma_range: 0.2
