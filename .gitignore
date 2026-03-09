@@ -1,0 +1,49 @@
+# Python caches/artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Training artifacts
+runs/
+debug_overlays/
+results/tables/
+
+# Generated split/manifest outputs
+splits/manifest.csv
+splits/summary.json
+splits/manifest_seqval.csv
+splits/seqval_summary.json
+splits/runlog.txt
+
+# Model/checkpoint files
+*.pt
+*.pth
+*.ckpt
+
+# Logs
+*.log

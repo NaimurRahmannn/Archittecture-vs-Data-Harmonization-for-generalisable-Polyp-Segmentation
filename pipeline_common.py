@@ -245,7 +245,7 @@ def build_model_from_config(cfg):
 
 
 @torch.no_grad()
-def evaluate_model(model, loader, device):
+def evaluate_model(model, loader, device, threshold=0.5):
     model.eval()
     tp = 0.0
     fp = 0.0
@@ -258,7 +258,7 @@ def evaluate_model(model, loader, device):
         masks = masks.to(device)
         logits = model(images)
         probs = torch.sigmoid(logits)
-        preds = (probs > 0.5).float()
+        preds = (probs > threshold).float()
 
         tp += (preds * masks).sum().item()
         fp += (preds * (1.0 - masks)).sum().item()
