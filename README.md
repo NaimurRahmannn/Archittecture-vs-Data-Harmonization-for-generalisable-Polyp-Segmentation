@@ -6,12 +6,6 @@
 ![Evaluation](https://img.shields.io/badge/Evaluation-Centre%20%2B%20Sequence%20Shift-1F6FEB)
 ![Status](https://img.shields.io/badge/Status-Research%20Code-orange)
 
-[![GitHub stars](https://img.shields.io/github/stars/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation?style=social)](https://github.com/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation)
-[![GitHub forks](https://img.shields.io/github/forks/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation?style=social)](https://github.com/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation/network/members)
-[![GitHub last commit](https://img.shields.io/github/last-commit/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation)](https://github.com/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation/commits)
-[![GitHub issues](https://img.shields.io/github/issues/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation)](https://github.com/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation/issues)
-[![GitHub license](https://img.shields.io/github/license/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation)](https://github.com/NaimurRahmannn/Archittecture-vs-Data-Harmonization-for-generalisable-Polyp-Segmentation/blob/main/LICENSE)
-
 Codebase for a thesis study on robust polyp segmentation under centre shift and sequence shift.
 
 Primary question:
