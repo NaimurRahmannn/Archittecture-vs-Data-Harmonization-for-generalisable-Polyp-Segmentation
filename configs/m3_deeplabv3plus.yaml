@@ -1,0 +1,22 @@
+model_name: m3_deeplabv3plus
+pretrained: true
+
+data_root: E:/Thesis_Dataset/PolypGen2021_MultiCenterData_v3/PolypGen2021_MultiCenterData_v3
+manifest_csv: E:/Thesis_Code/splits/manifest.csv
+run_dir: E:/Thesis_Code/runs/m3_deeplabv3plus
+
+image_size: 256
+batch_size: 4
+num_workers: 0
+
+epochs: 50
+lr: 0.0001
+weight_decay: 0.0001
+seed: 0
+use_amp: true
+
+augment: true
+rotate_limit: 20.0
+brightness_range: 0.2
+contrast_range: 0.2
+gamma_range: 0.2

@@ -202,6 +202,7 @@ def build_loader(rows, cfg, shuffle):
         rows,
         cfg["data_root"],
         image_size=cfg.get("image_size", 256),
+        imagenet_norm=cfg.get("imagenet_norm", False),
         augment=shuffle and cfg.get("augment", True),
         rotate_limit=cfg.get("rotate_limit", 20.0),
         brightness_range=cfg.get("brightness_range", 0.2),
@@ -241,6 +242,8 @@ def main():
         lr=cfg.get("lr", 1e-4),
         weight_decay=cfg.get("weight_decay", 1e-4),
     )
+    use_amp = bool(cfg.get("use_amp", False)) and torch.cuda.is_available()
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     epochs = int(cfg.get("epochs", 50))
 
     run_dir = Path(cfg.get("run_dir", "runs/m0_unet"))
@@ -263,12 +266,13 @@ def main():
         for images, masks in train_loader:
             images = images.to(device)
             masks = masks.to(device)
-            logits = model(images)
-            loss = dice_bce_loss(logits, masks)
-
             optimizer.zero_grad(set_to_none=True)
-            loss.backward()
-            optimizer.step()
+            with torch.cuda.amp.autocast(enabled=use_amp):
+                logits = model(images)
+                loss = dice_bce_loss(logits, masks)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             total_loss += loss.item()
 
         train_loss = total_loss / max(1, len(train_loader))

@@ -133,4 +133,115 @@ The area_ratio metric is included to diagnose segmentation size bias.
 - This repository does not include the dataset. Please follow the dataset license and terms of use.
 - Large checkpoint files (.pt) should not be committed directly to GitHub; use external storage or Git LFS.
 
+## Kvasir External Test Workflow
 
+This repository also supports Kvasir-SEG as an external test-only dataset for cross-dataset domain generalization evaluation.
+
+The Kvasir integration is additive only:
+
+- Training remains on PolypGen / EndoCV checkpoints only.
+- Kvasir-SEG is used only at evaluation time.
+- Existing training and evaluation entry points are unchanged.
+
+### Added Modules
+
+- `datasets/kvasir_dataset.py`
+	Loads Kvasir-SEG from the standard `images/` and `masks/` folders, resizes image and mask together, supports optional ImageNet normalization, and returns `(image_tensor, mask_tensor, metadata_dict)`.
+- `scripts/build_kvasir_manifest.py`
+	Builds `kvasir_manifest.csv` with `image_path`, `mask_path`, `split`, `dataset`, and `source`.
+- `evaluation/evaluate_kvasir.py`
+	Loads an existing trained checkpoint and evaluates it on Kvasir-SEG only.
+
+### Build The Kvasir Manifest
+
+```powershell
+.\.venv\Scripts\python.exe scripts\build_kvasir_manifest.py
+```
+
+Optional overrides:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\build_kvasir_manifest.py --kvasir_root E:\Thesis_Dataset\kvasir-seg\Kvasir-SEG --output E:\Thesis_Code\kvasir_manifest.csv
+```
+
+### Evaluate A Trained Checkpoint On Kvasir
+
+Example with M2b:
+
+```powershell
+.\.venv\Scripts\python.exe evaluation\evaluate_kvasir.py --checkpoint runs\m2b_imagenet_seed0\best.pt --model M2b
+```
+
+Example with explicit config override:
+
+```powershell
+.\.venv\Scripts\python.exe evaluation\evaluate_kvasir.py --checkpoint runs\m2b_imagenet_seed0\best.pt --model M2b --config configs\m2b_imagenet_seed0.yaml
+```
+
+### Resolution Ablation
+
+Supported evaluation resolutions:
+
+- `256`
+- `352`
+- `512`
+
+Examples:
+
+```powershell
+.\.venv\Scripts\python.exe evaluation\evaluate_kvasir.py --checkpoint runs\m2b_imagenet_seed0\best.pt --model M2b --img_size 256
+.\.venv\Scripts\python.exe evaluation\evaluate_kvasir.py --checkpoint runs\m2b_imagenet_seed0\best.pt --model M2b --img_size 352
+.\.venv\Scripts\python.exe evaluation\evaluate_kvasir.py --checkpoint runs\m2b_imagenet_seed0\best.pt --model M2b --img_size 512
+```
+
+### Metrics And Analysis
+
+The Kvasir evaluator reports:
+
+- `Dice`
+- `IoU`
+- `Precision`
+- `Recall`
+- `F2`
+- `mean_pred_area`
+- `mean_gt_area`
+- `area_ratio`
+
+It also includes:
+
+- threshold sensitivity at `0.3`, `0.5`, and `0.7`
+- worst-case qualitative overlays
+- size-stratified results for `small`, `medium`, and `large` polyps based on GT mask area fraction
+
+### Output Files
+
+Running `evaluation/evaluate_kvasir.py` writes:
+
+- `outputs/kvasir_metrics.json`
+- `outputs/kvasir_metrics.csv`
+- `outputs/kvasir_threshold_results.csv`
+- `outputs/kvasir_visuals/`
+
+The visual directory contains the top worst Dice cases and a `worst_cases.csv` index.
+
+### Multi-Seed Aggregation
+
+To summarise Kvasir results across seeds in paper-style `mean +- std` format, run:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\aggregate_kvasir_mean_std.py --seeds 0,1,2 --dir_template 'outputs/kvasir_m2b_seed{seed}_valdice' --label m2b_kvasir_valdice --out_csv outputs\kvasir_m2b_valdice_mean_std.csv --out_threshold_csv outputs\kvasir_m2b_valdice_threshold_mean_std.csv --out_json outputs\kvasir_m2b_valdice_mean_std.json
+```
+
+For the robustness-analysis checkpoint choice:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\aggregate_kvasir_mean_std.py --seeds 0,1,2 --dir_template 'outputs/kvasir_m2b_seed{seed}_seqval_constrained' --label m2b_kvasir_seqval_constrained --out_csv outputs\kvasir_m2b_seqval_constrained_mean_std.csv --out_threshold_csv outputs\kvasir_m2b_seqval_constrained_threshold_mean_std.csv --out_json outputs\kvasir_m2b_seqval_constrained_mean_std.json
+```
+
+### Integration Notes
+
+- The evaluator reuses the existing checkpoint format with `model_state` and embedded `config`.
+- It reuses the existing model factory in `pipeline_common.py`.
+- Use `--config` if a checkpoint does not contain the config values you want to evaluate with.
+- Use `--imagenet_norm` or `--no_imagenet_norm` to override normalization behavior when needed.
+- No retraining is performed on Kvasir-SEG.

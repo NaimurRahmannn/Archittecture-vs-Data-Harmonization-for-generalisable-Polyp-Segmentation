@@ -95,6 +95,7 @@ class ManifestSegDataset(Dataset):
         rows,
         data_root,
         image_size=256,
+        imagenet_norm=False,
         augment=False,
         rotate_limit=20.0,
         brightness_range=0.2,
@@ -104,6 +105,7 @@ class ManifestSegDataset(Dataset):
         self.rows = rows
         self.data_root = Path(data_root)
         self.image_size = int(image_size)
+        self.imagenet_norm = bool(imagenet_norm)
         self.augment = bool(augment)
         self.rotate_limit = float(rotate_limit)
         self.brightness_range = float(brightness_range)
@@ -152,6 +154,10 @@ class ManifestSegDataset(Dataset):
             image, mask = self._apply_augment(image, mask)
 
         image_np = np.asarray(image, dtype=np.float32) / 255.0
+        if self.imagenet_norm:
+            mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+            std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+            image_np = (image_np - mean) / std
         mask_np = np.asarray(mask, dtype=np.float32) / 255.0
         mask_np = (mask_np > 0.5).astype(np.float32)
 
@@ -241,6 +247,10 @@ def build_model_from_config(cfg):
             attn_dim=cfg.get("attn_dim", 64),
             max_tokens=cfg.get("max_tokens", 1024),
         )
+    if model_name in {"deeplabv3plus", "m3_deeplabv3plus"}:
+        from src.models.deeplabv3plus_baseline import DeepLabV3PlusBaseline
+
+        return DeepLabV3PlusBaseline(pretrained=cfg.get("pretrained", True))
     raise ValueError(f"Unsupported model_name: {cfg.get('model_name')}")
 
 

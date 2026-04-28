@@ -54,7 +54,12 @@ def main():
     if not group_rows:
         raise SystemExit(f"No rows found for group={args.group}")
 
-    dataset = ManifestSegDataset(group_rows, cfg["data_root"], image_size=cfg.get("image_size", 256))
+    dataset = ManifestSegDataset(
+        group_rows,
+        cfg["data_root"],
+        image_size=cfg.get("image_size", 256),
+        imagenet_norm=cfg.get("imagenet_norm", False),
+    )
     loader = DataLoader(
         dataset,
         batch_size=cfg.get("batch_size", 8),
